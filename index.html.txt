@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tinkercad Circuits & Pricing Showcase</title>
+    <!-- QRCode Generator Library CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-cyan: #00e5ff;
+            --accent-cyan-hover: #00b8d4;
+            --accent-green: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 30px 20px;
+            background-image: radial-gradient(circle at 50% 10%, rgba(0, 229, 255, 0.05) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .circuits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .circuit-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .circuit-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 229, 255, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .circuit-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+
+        .price-tag {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .type-badge {
+            display: inline-block;
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--accent-cyan);
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .wiring-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid var(--accent-cyan);
+            border-radius: 0 8px 8px 0;
+            padding: 12px 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .wiring-box strong {
+            color: var(--accent-cyan);
+            display: block;
+            margin-bottom: 5px;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .card-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 18px;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s ease;
+        }
+
+        .btn-buy {
+            background-color: var(--accent-cyan);
+            color: #000;
+        }
+
+        .btn-buy:hover {
+            background-color: var(--accent-cyan-hover);
+        }
+
+        .btn-qr {
+            background-color: rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-qr:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Modal Styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: #111827;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal h3 {
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        .modal p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        #qrcode {
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: var(--border-color);
+            color: var(--text-main);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Tinkercad Circuits Showcase & Pricing</h1>
+            <p>Explore wiring connections, component details, estimated pricing, and instant QR generation.</p>
+        </header>
+
+        <div class="circuits-grid" id="circuitGrid"></div>
+    </div>
+
+    <!-- QR Modal -->
+    <div class="modal-overlay" id="qrModal">
+        <div class="modal">
+            <h3 id="modalTitle">Circuit QR Code</h3>
+            <p id="modalDesc">Scan this QR code to view circuit specs and details.</p>
+            <div id="qrcode"></div>
+            <div>
+                <button class="close-btn" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const circuits = [
+            {
+                id: 1,
+                name: "1. L293D Bidirectional Motor Control",
+                type: "Microcontroller / IC",
+                price: "₹655.00",
+                wiring: "L293D: Pin 1,16 -> 5V | Pin 8 -> 9V(+) | Pin 4,5,12,13 -> GND<br>Inputs: Pin 2->D3, Pin 7->D4, Outputs: Pin 3->M1, Pin 6->M2<br>Switch: Left->5V, Middle->D2, Right->GND",
+                info: "Standard bidirectional DC motor control using Arduino Uno and L293D IC."
+            },
+            {
+                id: 2,
+                name: "2. DPDT Relay Reverse Circuit",
+                type: "Relay Switching",
+                price: "₹650.00",
+                wiring: "Relay Coil: Top Pin -> D8, Bottom Pin -> GND<br>H-Bridge: COM -> Motor Terminals<br>NC1 & NO2 -> 9V(+) | NO1 & NC2 -> 9V(-)<br>Switch: Pin 2 -> Arduino Input Signal",
+                info: "Polarity reversal achieved using KS2E-M-DC5 DPDT Relay and Arduino."
+            },
+            {
+                id: 3,
+                name: "3. Pure Hardware DPDT Reverse Circuit",
+                type: "No Code / No IC",
+                price: "₹150.00",
+                wiring: "Battery (+) -> Switch Pin 3, (-) -> Pin 5<br>Motor Term 1 -> Pin 4, Term 2 -> Pin 6<br>Cross Wires: Pin 1 to Pin 6, Pin 2 to Pin 5",
+                info: "Direct mechanical reversal setup using a 6-pin DPDT slide switch without code."
+            },
+            {
+                id: 4,
+                name: "4. Basic Single Direction On/Off",
+                type: "Direct DC Switch",
+                price: "₹135.00",
+                wiring: "9V(+) -> Switch Input Terminal<br>Switch Output -> Motor Terminal 1<br>9V(-) -> Motor Terminal 2",
+                info: "Simple direct power circuit to turn a toy DC motor ON and OFF."
+            },
+            {
+                id: 5,
+                name: "5. NPN Transistor Switch Circuit",
+                type: "BJT Switching",
+                price: "₹600.00",
+                wiring: "Base (B) -> D9 via 1kΩ Resistor<br>Collector (C) -> Motor (-) | Emitter (E) -> GND<br>Diode: Reverse biased across motor terminals",
+                info: "Transistor-based switching with back-EMF flyback diode protection."
+            },
+            {
+                id: 6,
+                name: "6. Servo Motor Control Circuit",
+                type: "PWM Angle Control",
+                price: "₹600.00",
+                wiring: "Signal Wire -> Arduino Pin D9 (PWM)<br>VCC Wire (Red) -> Arduino 5V<br>GND Wire -> Arduino GND",
+                info: "Precise angular sweep control (0° to 180°) using SG90 Servo motor."
+            },
+            {
+                id: 7,
+                name: "7. LED Blink & Output Circuit",
+                type: "Basic Output",
+                price: "₹477.00",
+                wiring: "Anode (+) -> Digital Pin D13 via 220Ω Resistor<br>Cathode (-) -> Arduino GND",
+                info: "Standard digital output testing setup with an LED and current limiting resistor."
+            }
+        ];
+
+        const grid = document.getElementById('circuitGrid');
+
+        circuits.forEach(c => {
+            const card = document.createElement('div');
+            card.className = 'circuit-card';
+            card.innerHTML = `
+                <div>
+                    <span class="type-badge">${c.type}</span>
+                    <div class="card-header">
+                        <div class="circuit-title">${c.name}</div>
+                        <div class="price-tag">${c.price}</div>
+                    </div>
+                    <div class="wiring-box">
+                        <strong>Wiring & Connections</strong>
+                        ${c.wiring}
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-buy" onclick="alert('Inquiry placed for: ${c.name}')">🛒 Buy / Inquiry</button>
+                    <button class="btn btn-qr" onclick="openQR('${c.name}', '${c.info}')">📱 QR Code</button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+
+        let qrInstance = null;
+
+        function openQR(title, desc) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalDesc').innerText = desc;
+            
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = ""; // Clear previous QR
+            
+            // Generate QR code dynamically
+            qrInstance = new QRCode(qrContainer, {
+                text: `Circuit: ${title} - ${desc}`,
+                width: 150,
+                height: 150,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            document.getElementById('qrModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('qrModal').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
